@@ -54,19 +54,33 @@ _____________________________________________________________
 
 ### S3 Read-Only Policy
 
-**Policy Name:** ___________________________
+**Policy Name:** S3-ReadOnly-SpecificBucket
 
-**Bucket Name Used:** ___________________________
+**Bucket Name Used:** bobsbucketnl
 
 **Policy JSON:**
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    
-    
-    
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "ListSpecificBucket",
+			"Effect": "Allow",
+			"Action": [
+				"s3:ListBucket"
+			],
+			"Resource": "arn:aws:s3:::bobsbucketnl"
+		},
+		{
+			"Sid": "ReadObjectsInBucket",
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:GetObjectVersion"
+			],
+			"Resource": "arn:aws:s3:::bobsbucketnl/*"
+		}
+	]
 }
 ```
 
@@ -77,7 +91,7 @@ _____________________________________________________________
 
 ### EC2 Start/Stop Policy
 
-**Policy Name:** ___________________________
+**Policy Name:** EC2-StartStop-Only
 
 **Policy ARN:** ___________________________
 
@@ -88,9 +102,9 @@ _____________________________________________________________
 
 ### CloudWatch Logs Write Policy
 
-**Policy Name:** ___________________________
+**Policy Name:** CloudWatch-Logs-Write-Only
 
-**Policy ARN:** ___________________________
+**Policy ARN:** arn:aws:logs:*:*:log-group:/aws/*
 
 **Screenshot 3: CloudWatch Logs Policy**
 ![CloudWatch Policy](screenshots/03-cloudwatch-policy.png)
@@ -101,11 +115,11 @@ _____________________________________________________________
 
 ### Policy Attached to User
 
-**User Name:** ___________________________
+**User Name:** alice
 
-**Policy Attached:** ___________________________
+**Policy Attached:** S3-ReadOnly-SpecificBucket
 
-**Attachment Method:** ☐ Console ☐ CLI
+**Attachment Method:** X Console
 
 **CLI Command (if used):**
 ```bash
@@ -122,24 +136,28 @@ _____________________________________________________________
 
 ### EC2 Service Role
 
-**Role Name:** ___________________________
+**Role Name:** EC2-S3-ReadOnly-Role
 
-**Role ARN:** ___________________________
+**Role ARN:** arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
 
 **Trusted Entity:** ___________________________
 
 **Attached Policies:**
-1. ___________________________
-2. ___________________________
+1. AmazonS3ReadOnlyAccess
 
 **Trust Relationship JSON:**
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    
-    
-  ]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
 }
 ```
 
@@ -150,13 +168,13 @@ _____________________________________________________________
 
 ### Lambda Execution Role
 
-**Role Name:** ___________________________
+**Role Name:** Lambda-Basic-Execution-Role
 
 **Role ARN:** ___________________________
 
 **Attached Policies:**
-1. ___________________________
-2. ___________________________
+1. AWSLambdaBasicExecutionRole
+2. CloudWatch-Logs-Write-Only
 
 **Screenshot 6: Lambda Role**
 ![Lambda Role](screenshots/06-lambda-role.png)
@@ -165,16 +183,15 @@ _____________________________________________________________
 
 ### Cross-Account Access Role
 
-**Role Name:** ___________________________
+**Role Name:** CrossAccount-ReadOnly-Role
 
 **Role ARN:** ___________________________
 
 **External Account ID:** ___________________________
 
-**External ID:** ___________________________
-
+**External ID:** unique-external-id-123
 **Attached Policies:**
-1. ___________________________
+1. ReadOnlyAccess
 
 **Screenshot 7: Cross-Account Role**
 ![Cross-Account Role](screenshots/07-cross-account-role.png)
