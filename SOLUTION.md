@@ -2,7 +2,7 @@
 
 **Student Name:** France
 **Date:** 21 April 2026
-**Lab Completion Time:** ___________ minutes
+**Lab Completion Time:** It took me a couple of hours
 
 ---
 
@@ -14,38 +14,31 @@
 
 **Version:**
 ```
-This is the date of when the policy was last updated. _____________________________________________________________
-_____________________________________________________________
-```
+This is the date of when the policy was last updated. 
 
 **Statement:**
 ```
-It is the main container for the policy logic. Includes multiple individual permissions._____________________________________________________________
-_____________________________________________________________
+It is the main container for the policy logic. Includes multiple individual permissions.
 ```
 
 **Sid:**
 ```
-This is the main idea of the logic behind the policy. What does it entail? _____________________________________________________________
-_____________________________________________________________
+This is the main idea of the logic behind the policy. What does it entail? 
 ```
 
 **Effect:**
 ```
-This is how the policy will be understood if it explicitly grants access or not. _____________________________________________________________
-_____________________________________________________________
+This is how the policy will be understood if it explicitly grants access or not. 
 ```
 
 **Action:**
 ```
-This defines what action that needs to be provided access to._____________________________________________________________
-_____________________________________________________________
+This defines what action that needs to be provided access to.
 ```
 
 **Resource:**
 ```
-This is where it identifies the specific object the policy covers._____________________________________________________________
-_____________________________________________________________
+This is where it identifies the specific object the policy covers.
 ```
 
 ---
@@ -170,7 +163,7 @@ _____________________________________________________________
 
 **Role Name:** Lambda-Basic-Execution-Role
 
-**Role ARN:** ___________________________
+**Role ARN:** arn:aws:iam::845587649055:role/Lambda-Basic-Execution-Role
 
 **Attached Policies:**
 1. AWSLambdaBasicExecutionRole
@@ -185,9 +178,9 @@ _____________________________________________________________
 
 **Role Name:** CrossAccount-ReadOnly-Role
 
-**Role ARN:** ___________________________
+**Role ARN:** arn:aws:iam::845587649055:role/CrossAccount-ReadOnly-Role
 
-**External Account ID:** ___________________________
+**External Account ID:** 845587649055
 
 **External ID:** unique-external-id-123
 **Attached Policies:**
@@ -202,7 +195,7 @@ _____________________________________________________________
 
 ### Policy Simulator Results
 
-**Policy Tested:** ___________________________
+**Policy Tested:** Yes
 
 **Test Results:**
 
@@ -224,34 +217,30 @@ _____________________________________________________________
 **Test 1: S3 List Bucket**
 ```bash
 # Command:
-
+aws s3 ls s3://bobsbucketnl
 # Output:
-_____________________________________________________________
-_____________________________________________________________
+2026-04-21 20:11:24          5 test.txt
 
-# Result: ☐ Success ☐ Access Denied
+# Result: x Success ☐ Access Denied
 ```
 
 **Test 2: S3 Upload File**
 ```bash
 # Command:
-
+aws s3 cp test.txt s3://bobsbucketnl/ --profile alice
 # Output:
-_____________________________________________________________
-_____________________________________________________________
-
-# Result: ☐ Success ☐ Access Denied (Expected)
+upload failed: ./test.txt to s3://bobsbucketnl/test.txt An error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:iam::845587649055:user/alice is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::bobsbucketnl/test.txt" because no identity-based policy allows the s3:PutObject action
+# Result: ☐ Success X Access Denied (Expected)
 ```
 
 **Test 3: S3 Download File**
 ```bash
 # Command:
-
+aws s3 cp s3://bobsbucketnl/test.txt ./
 # Output:
-_____________________________________________________________
-_____________________________________________________________
+download: s3://bobsbucketnl/test.txt to ./test.txt  
 
-# Result: ☐ Success ☐ Access Denied
+# Result: x Success ☐ Access Denied
 ```
 
 ---
@@ -260,34 +249,53 @@ _____________________________________________________________
 
 ### Custom Policy with Conditions
 
-**Policy Name:** ___________________________
+**Policy Name:** S3-ReadOnly-IPRestricted-bobsbucketnl
 
-**Condition Type Used:** ☐ IP Address ☐ Time Window ☐ MFA ☐ Other: _______
+**Condition Type Used:** x IP Address ☐ Time Window ☐ MFA ☐ Other: _______
 
 **Policy JSON:**
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        
-      ],
-      "Resource": "",
-      "Condition": {
-        
-      }
-    }
-  ]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ReadOnlyFromMyIP",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": "arn:aws:s3:::bobsbucketnl",
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": "145.90.65.82/32"
+                }
+            }
+        },
+        {
+            "Sid": "GetObjectsFromMyIP",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3:::bobsbucketnl/*",
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": "145.90.65.82/32"
+                }
+            }
+        }
+    ]
 }
 ```
 
 **Rationale for this policy:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+Implemented least privilege by restricting S3 access to:
+- Specific bucket only
+- Read-only actions (ListBucket, GetObject)
+- Access limited to my IP address
+
+This ensures the user can only access resources from a trusted network.
 ```
 
 ---
@@ -298,23 +306,17 @@ _____________________________________________________________
 
 **Issue Description:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+I had an issue with testing from step 10. The upload wasnt really failing. 
 ```
 
 **Commands Used to Diagnose:**
 ```bash
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+aws sts get-caller-identity
 ```
 
 **Resolution:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+I checked if the terminal is accepting that I am using the same account ID but im trying to do a test developer profile
 ```
 
 **Screenshot 9: Troubleshooting Output**
@@ -328,48 +330,35 @@ _____________________________________________________________
 
 **Your answer:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+There are more configurations that a root user can set as per preference and workflow security of the client. 
 ```
 
 ### 2. Explain the principle of least privilege and how you applied it in this lab.
 
 **Your answer:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+I've only provided the most minimal access to the users that needs permission to a certain bucket for example. In this lab, I applied it by limiting access for certain actions a user can do to a certain bucket. 
 ```
 
 ### 3. What is the difference between identity-based and resource-based policies?
 
 **Your answer:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+Identity based policy controls what they can do and resource-based polocy controls who can access it. 
 ```
 
 ### 4. When would you use an explicit "Deny" in a policy?
 
 **Your answer:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+The most important action to apply this would probably for deleting objects or instances. 
 ```
 
 ### 5. Describe a scenario where you'd use conditions in IAM policies.
 
 **Your answer:**
 ```
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+IAM could be a good practice to use if a couple of developers from different departments were to work in one project. 
 ```
 
 ---
@@ -377,14 +366,15 @@ _____________________________________________________________
 ## Summary of Resources Created
 
 **IAM Policies:**
-1. ___________________________  (ARN: ___________________________)
-2. ___________________________  (ARN: ___________________________)
-3. ___________________________  (ARN: ___________________________)
+1. CloudWatch-Logs-Write-Only  (ARN: arn:aws:iam::845587649055:policy/CloudWatch-Logs-Write-Only)
+2. S3-ReadOnly-SpecificBucket  (ARN: arn:aws:iam::845587649055:policy/S3-ReadOnly-SpecificBucket)
+3. EC2-StartStop-Only  (ARN: arn:aws:iam::845587649055:policy/EC2-StartStop-Only)
+4. S3-ReadOnly-IPRestricted-bobsbucketnl (ARN: arn:aws:iam::845587649055:policy/S3-ReadOnly-IPRestricted-bobsbucketnl)
 
 **IAM Roles:**
-1. ___________________________  (ARN: ___________________________)
-2. ___________________________  (ARN: ___________________________)
-3. ___________________________  (ARN: ___________________________)
+1. CrossAccount-ReadOnly-Role  (ARN: arn:aws:iam::845587649055:role/CrossAccount-ReadOnly-Role)
+2. EC2-S3-ReadOnly-Role  (ARN: arn:aws:iam::845587649055:role/EC2-S3-ReadOnly-Role)
+3. Lambda-Basic-Execution-Role  (ARN: arn:aws:iam::845587649055:role/Lambda-Basic-Execution-Role)
 
 **Users Modified:**
 1. ___________________________
@@ -401,10 +391,7 @@ _____________________________________________________________
 
 **Cleanup Commands:**
 ```bash
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
+Manually cleaned up via console
 ```
 
 ---
@@ -415,14 +402,14 @@ _____________________________________________________________
 
 | Concept | Before Lab | After Lab | Improvement |
 |---------|-----------|-----------|-------------|
-| IAM Policy Structure | ___/5 | ___/5 | +___ |
-| Custom Policy Creation | ___/5 | ___/5 | +___ |
-| IAM Roles | ___/5 | ___/5 | +___ |
-| Service Roles | ___/5 | ___/5 | +___ |
-| Trust Relationships | ___/5 | ___/5 | +___ |
-| Policy Testing | ___/5 | ___/5 | +___ |
-| Least Privilege | ___/5 | ___/5 | +___ |
-| Troubleshooting IAM | ___/5 | ___/5 | +___ |
+| IAM Policy Structure | 2/5 | 4/5 | +2 |
+| Custom Policy Creation | 1/5 | 3/5 | +2 |
+| IAM Roles | 4/5 | 5/5 | +1 |
+| Service Roles | 3/5 | 4/5 | +1 |
+| Trust Relationships | 1/5 | 3/5 | +2 |
+| Policy Testing | 1/5 | 4/5 | +3 |
+| Least Privilege | 4/5 | 5/5 | +1 |
+| Troubleshooting IAM | 1/5 | 4/5 | +3 |
 
 ---
 
